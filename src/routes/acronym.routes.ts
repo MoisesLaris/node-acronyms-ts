@@ -1,10 +1,8 @@
-import { Router, Response, Request } from 'express';
-
+import { Router } from 'express';
+import { getAcronym } from './../controllers/acronym.controller';
 const router = Router();
-// const lawController = new LawController();
-router.get('/', (req: Request, res: Response) => {
-    res.status(200).send('thanks a lot');
-});
+
+router.get('/', () => {}, getAcronym);
 
 
 export default router;
