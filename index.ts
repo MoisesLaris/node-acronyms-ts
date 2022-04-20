@@ -1,5 +1,6 @@
 import express, {Application} from 'express';
 import acronymRoutes from './src/routes/acronym.routes';
+import { initializeConnectionDatabase, syncAndPopulate } from './src/database';
 
 class App {
     private app: Application;
@@ -12,18 +13,15 @@ class App {
         this.app = express();
         this.port = '3000';
 
-        // //Conexión a la base de datos
-        // this.connectDb();
-
-        // //Concexión con Fczirebase
-        // this.firebaseConection();
+        // Initialize database connection and populate json file.
+        this.connectDb();
 
         // //Middlewares
         // this.middlewares();
 
+        // Define routes
+        this.routes();
 
-        // //Definir las rutas
-        // this.routes();
         // configuration to redirect web app
         // this.app.get('*.*', express.static("public", {maxAge: '1y'}));
         // this.app.all('*', function (req, res) {
@@ -31,16 +29,16 @@ class App {
         // });
     }
 
-    // async connectDb(){
-    //     await mongoConnection();
-    // }
+    async connectDb(){
+        try {
+            await initializeConnectionDatabase();
+            await syncAndPopulate();
+        } catch (error) {
+            console.log('Error: ', error);
+        }
+    }
 
     middlewares() {
-        // CORS
-        // this.app.use(cors());
-
-        // this.app.use(compression());
-        //Lectura del body
         this.app.use(express.json());
     }
 
@@ -54,3 +52,6 @@ class App {
         });
     }
 }
+
+const app = new App();
+app.listen();
