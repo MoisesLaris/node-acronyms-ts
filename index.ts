@@ -17,7 +17,7 @@ class App {
         this.connectDb();
 
         // //Middlewares
-        // this.middlewares();
+        this.middlewares();
 
         // Define routes
         this.routes();

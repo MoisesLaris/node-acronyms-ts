@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { getAcronym } from './../controllers/acronym.controller';
+import { getAcronym, postAcronym } from './../controllers/acronym.controller';
 
 const router = Router();
 router.get('/', getAcronym);
-router.post('/')
+router.post('/', postAcronym);
 
 // Other routes return 404 status
 router.get("*", (req, res) => {
