@@ -27,14 +27,10 @@ export const getAcronym = async (req: Request, res: Response) => {
 }
 
 export const postAcronym = async (req: Request, res: Response) => {
-    console.log(req.body);
-    if (!req.body) {
-        return res.status(400).send('Body is required.');
-    }
     const {acronym, definition} = req.body;
-    
-    if (!acronym.trim()) {
-        res.status(400).send('Acronym must not be an empty string.');
+
+    if (!acronym || !acronym.trim()) {
+        return res.status(400).send('Acronym must not be an empty string.');
     }
 
     const acronymToCreate = new Acronym({
@@ -47,5 +43,50 @@ export const postAcronym = async (req: Request, res: Response) => {
         res.send({message: 'Acronym created succesfully.', acronym: acronymCreated} as ResponseModel);
     } catch (error) {
         res.status(400).send({error} as ResponseModel);
+    }
+}
+
+export const updateAcronym = async (req: Request, res: Response) => {
+    const {acronym} = req.params;
+    const {definition} = req.body;
+    
+    if (!acronym || !acronym.trim()) {
+        return res.status(400).send({error: 'Acronym must not be an empty string.'} as ResponseModel);
+    }
+
+    if (!definition || !definition.trim()) {
+        return res.status(400).send({error: 'Definition must not be an empty string.'} as ResponseModel);
+    }
+
+    const properties = await acronymRepository.findOne({
+        where: {
+            acronym
+        } 
+    });
+
+    if (!properties) {
+        return res.status(400).send({error: 'Acronym was not found.'} as ResponseModel);
+    }
+    
+    const updatedAcronym = await acronymRepository.save({
+        ...properties,
+        definition,
+    });
+    
+    if(!updatedAcronym) {
+        return res.status(400).send({error: 'Definition was not updated.'} as ResponseModel);
+    }
+
+    return res.send({
+        message: `Acronym "${properties.acronym}" was sucessfully updated.`,
+        acronym: updatedAcronym,
+    } as ResponseModel);
+}
+
+export const deleteAcronym = async (req: Request, res: Response) => {
+    const {acronym} = req.params;
+    
+    if (!acronym || !acronym.trim()) {
+        return res.status(400).send({error: 'Acronym must not be an empty string.'} as ResponseModel);
     }
 }
