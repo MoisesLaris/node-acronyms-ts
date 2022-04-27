@@ -2,24 +2,32 @@ import "reflect-metadata"
 import { DataSource } from "typeorm"
 import { Acronym } from "./entity/acronym";
 import { mapAndTransformJson } from "../utils/utils";
+import 'dotenv/config';
 
 export const AppDataSource = new DataSource({
     type: "postgres",
-    host: "localhost",
-    port: 5432,
-    username: "root",
-    password: "root",
-    database: "acronym",
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || '5432'),
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     entities: [Acronym],
     synchronize: true,
     logging: false,
 });
 
 export const initializeConnectionDatabase = async () => {
-    try {
-        await AppDataSource.initialize();
-    } catch (error) {
-        throw error;
+    let retries = 5;
+    while(retries) {
+        try {
+            await AppDataSource.initialize();
+            break;
+        } catch (error) {
+            console.log(error);
+            retries--;
+            console.log(`retries left ${retries}`);
+            await new Promise(res => setTimeout(res, 5000));
+        }
     }
 }
 

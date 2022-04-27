@@ -1,6 +1,7 @@
 import express, {Application} from 'express';
 import acronymRoutes from './src/routes/acronym.routes';
 import { initializeConnectionDatabase, syncAndPopulate } from './src/database';
+import 'dotenv/config';
 
 class App {
     private app: Application;
@@ -11,26 +12,20 @@ class App {
 
     constructor() {
         this.app = express();
-        this.port = '3000';
+        this.port = process.env.NODE_PORT || '3000';
 
         // Initialize database connection and populate json file.
         this.connectDb();
 
-        // //Middlewares
+        // Middlewares
         this.middlewares();
 
         // Define routes
         this.routes();
-
-        // configuration to redirect web app
-        // this.app.get('*.*', express.static("public", {maxAge: '1y'}));
-        // this.app.all('*', function (req, res) {
-        //     res.sendFile('/index.html', {root: "public"});
-        // });
     }
 
     async connectDb(){
-        try {
+        try{
             await initializeConnectionDatabase();
             await syncAndPopulate();
         } catch (error) {
@@ -44,11 +39,14 @@ class App {
 
     routes() {
         this.app.use(this.apiPaths.acronym, acronymRoutes);
+        this.app.all('*', (req, res) => {
+            res.sendStatus(404);
+        });
     }
 
     listen() {
         this.app.listen(this.port, () => {
-            console.log('Server running on port: ' + this.port);
+            console.log('Server running on porteishon: ' + this.port);
         });
     }
 }

@@ -11,9 +11,5 @@ router.delete('/:acronym', deleteAcronym);
 router.get('/random', getRandomAcronyms);
 router.get('/info', getInfo);
 router.get('/:id', getAcronymById);
-// Other routes return 404 status
-router.get("*", (req, res) => {
-  res.sendStatus(404);
-});
 
 export default router;

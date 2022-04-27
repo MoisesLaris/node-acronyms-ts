@@ -7,11 +7,11 @@ import { ResponseModel } from './../models/response';
 const acronymRepository = AppDataSource.getRepository(Acronym);
 
 export const getAcronym = async (req: Request, res: Response) => {
-    let search = req.query.search as string;
+    const search = req.query.search as string;
     let { from, limit } = req.query;
     if (!from) from = '0';
     if (!limit) limit = '10';
-    if (!search) res.status(403).send('Search parameter is required.');
+    if (!search || !search.trim()) res.status(403).send('Search parameter is required.');
 
     // ILIKE operator performs case insensitive queries.
     const [acronyms, total] = await acronymRepository.findAndCount({
@@ -29,7 +29,7 @@ export const getAcronymById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        const acronym = await acronymRepository.findOneById(id);
+        const acronym = await acronymRepository.findOneBy({id});
 
         if (!acronym) {
             return res.status(404).send({ message: `Acronym not found with the id ${id}.` } as ResponseModel);
@@ -96,10 +96,14 @@ export const getInfo = (req: Request, res: Response) => {
 }
 
 export const postAcronym = async (req: Request, res: Response) => {
-    const { acronym, definition } = req.body;
+    const { acronym = '', definition = '' }: {acronym: string, definition: string} = req.body;
 
     if (!acronym || !acronym.trim()) {
-        return res.status(403).send('Acronym must not be an empty string.');
+        return res.status(403).send({error: 'Acronym value must be provided.'} as ResponseModel);
+    }
+
+    if (!definition || !definition.trim()) {
+        return res.status(403).send({error: 'Definition value must be provided.'} as ResponseModel);
     }
 
     const acronymToCreate = new Acronym({
@@ -109,22 +113,22 @@ export const postAcronym = async (req: Request, res: Response) => {
 
     try {
         const acronymCreated = await acronymRepository.save(acronymToCreate);
-        res.send({ message: 'Acronym created succesfully.', acronym: acronymCreated } as ResponseModel);
+        res.send({ message: 'Acronym was succesfully created.', acronym: acronymCreated } as ResponseModel);
     } catch (error) {
         res.status(403).send({ error } as ResponseModel);
     }
 }
 
 export const updateAcronym = async (req: Request, res: Response) => {
-    const { acronym } = req.params;
-    const { definition } = req.body;
+    const { acronym = '' } = req.params;
+    const { definition = '' } = req.body;
 
     if (!acronym || !acronym.trim()) {
-        return res.status(403).send({ error: 'Acronym must not be an empty string.' } as ResponseModel);
+        return res.status(403).send({ error: 'Acronym value must be provided.' } as ResponseModel);
     }
 
     if (!definition || !definition.trim()) {
-        return res.status(403).send({ error: 'Definition must not be an empty string.' } as ResponseModel);
+        return res.status(403).send({ error: 'Definition value must be provided.' } as ResponseModel);
     }
 
     const properties = await acronymRepository.findOne({
@@ -153,7 +157,7 @@ export const updateAcronym = async (req: Request, res: Response) => {
 }
 
 export const deleteAcronym = async (req: Request, res: Response) => {
-    const { acronym } = req.params;
+    const { acronym = '' } = req.params;
 
     if (!acronym || !acronym.trim()) {
         return res.status(403).send({ error: 'Acronym must not be an empty string.' } as ResponseModel);
