@@ -3,6 +3,7 @@ import { AppDataSource } from './../database/index';
 import { Acronym } from '../database/entity/acronym';
 import { ILike } from "typeorm";
 import { ResponseModel } from './../models/response';
+import { isUUID } from '../utils/utils';
 
 const acronymRepository = AppDataSource.getRepository(Acronym);
 
@@ -11,7 +12,7 @@ export const getAcronym = async (req: Request, res: Response) => {
     let { from, limit } = req.query;
     if (!from) from = '0';
     if (!limit) limit = '10';
-    if (!search || !search.trim()) res.status(403).send('Search parameter is required.');
+    if (!search || !search.trim()) res.status(403).send({error: 'Search parameter is required.'} as ResponseModel);
 
     // ILIKE operator performs case insensitive queries.
     const [acronyms, total] = await acronymRepository.findAndCount({
@@ -22,17 +23,19 @@ export const getAcronym = async (req: Request, res: Response) => {
         skip: parseInt(from as string),
     });
 
-    res.send({ acronyms, total });
+    res.send({ total, acronyms });
 }
 
 export const getAcronymById = async (req: Request, res: Response) => {
     const { id } = req.params;
-
+    if(!isUUID(id)) {
+        return res.status(403).send({ error: `Acronym ID must be a valid UUID`} as ResponseModel);
+    }
     try {
         const acronym = await acronymRepository.findOneBy({id});
 
         if (!acronym) {
-            return res.status(404).send({ message: `Acronym not found with the id ${id}.` } as ResponseModel);
+            return res.status(404).send({ error: `Acronym not found for the id ${id}.` } as ResponseModel);
         }
         return res.send({ acronym });
     } catch (error) {
@@ -42,21 +45,21 @@ export const getAcronymById = async (req: Request, res: Response) => {
 
 export const getRandomAcronyms = async (req: Request, res: Response) => {
     const amount = req.query.amount as string;
-    let numberOfAcronyms: number = 10;
+    let total: number = 10;
 
     if (amount && amount.trim()) {
-        numberOfAcronyms = parseInt(amount.trim());
-        if (isNaN(numberOfAcronyms)) {
-            return res.status(404).send({ error: 'Amount query param must be a number.' });
+        total = parseInt(amount.trim());
+        if (isNaN(total)) {
+            return res.status(404).send({ error: 'Amount query param must be a number.' } as ResponseModel);
         }
     }
 
     const acronyms = await AppDataSource.createQueryBuilder(Acronym, "acronym")
         .orderBy('RANDOM()')
-        .take(numberOfAcronyms)
+        .take(total)
         .getMany();
 
-    return res.send({ numberOfAcronyms, acronyms });
+    return res.send({ total, acronyms });
 }
 
 export const getInfo = (req: Request, res: Response) => {
@@ -70,7 +73,7 @@ export const getInfo = (req: Request, res: Response) => {
         <p>The following endpoints are available:</p>
         
         <ul>
-            <li>GET /acronym?from=50&limit=10&search=:search
+            <li>GET /acronym?from=0&limit=10&search=:search
                 <ul>
                     <li>search is required</li>
                     <li>from is defaulted by 10</li>
@@ -168,7 +171,7 @@ export const deleteAcronym = async (req: Request, res: Response) => {
             acronym: ILike(acronym)
         });
         if (!deletedAcronym || !deletedAcronym.affected || deletedAcronym.affected <= 0) {
-            return res.send({ message: `Acronym '${acronym}' was not found.` } as ResponseModel);
+            return res.status(404).send({ message: `Acronym '${acronym}' was not found.` } as ResponseModel);
         }
     } catch (error) {
         return res.status(403).send({ message: `Acronym '${acronym}' was not deleted.`, error } as ResponseModel);

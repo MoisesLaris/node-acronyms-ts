@@ -1,6 +1,6 @@
 import fs from "fs";
 
-export function mapAndTransformJson() {
+export const mapAndTransformJson = () => {
     try {
         let data = fs.readFileSync('acronym.json', { encoding: "utf8" });
         return JSON.parse(data).map((acr: any) => {
@@ -13,4 +13,14 @@ export function mapAndTransformJson() {
     } catch (error) {
         console.log('Error: ', error);
     }
+}
+
+export const isUUID = (uuid: string = '') => {
+    let s: any = uuid.trim();
+
+    s = s.match('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+    if (s === null) {
+      return false;
+    }
+    return true;
 }
