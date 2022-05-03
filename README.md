@@ -25,8 +25,12 @@ To start the project we'll simply run:
 - **`PUT /acronym/:acronym`**
 - **`DELETE /acronym/:acronym`**
 
+## Available auth endpoints
+
+
 - **`GET /auth/:email`**
   - `Endpoint to generate Json Web Token`
+  - `Provide email address`
 
 ## Bugs
 PR's are welcome!
