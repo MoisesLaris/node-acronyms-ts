@@ -49,7 +49,7 @@ class App {
 
     listen() {
         this.app.listen(this.port, () => {
-            console.log('Server running on porteishon: ' + this.port);
+            console.log('Server running on port: ' + this.port);
         });
     }
 }
