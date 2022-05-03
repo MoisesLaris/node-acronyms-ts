@@ -90,6 +90,7 @@ export const getInfo = (req: Request, res: Response) => {
             <li>POST /acronym</li>
             <li>PUT /acronym/:acronym</li>
             <li>DELETE /acronym/:acronym</li>
+            <li>GET /auth/:email</li>
         </ul>
     </div>
 
