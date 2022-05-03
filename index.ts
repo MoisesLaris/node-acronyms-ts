@@ -1,5 +1,6 @@
 import express, {Application} from 'express';
 import acronymRoutes from './src/routes/acronym.routes';
+import authRoutes from './src/routes/auth.routes';
 import { initializeConnectionDatabase, syncAndPopulate } from './src/database';
 import 'dotenv/config';
 
@@ -7,7 +8,8 @@ class App {
     private app: Application;
     private port: string;
     private apiPaths = {
-        acronym: '/acronym'
+        acronym: '/acronym',
+        auth: '/auth',
     }
 
     constructor() {
@@ -39,6 +41,7 @@ class App {
 
     routes() {
         this.app.use(this.apiPaths.acronym, acronymRoutes);
+        this.app.use(this.apiPaths.auth, authRoutes);
         this.app.all('*', (req, res) => {
             res.sendStatus(404);
         });

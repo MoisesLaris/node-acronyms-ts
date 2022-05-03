@@ -109,6 +109,16 @@ export const postAcronym = async (req: Request, res: Response) => {
         return res.status(403).send({error: 'Definition value must be provided.'} as ResponseModel);
     }
 
+    const acronymDuplicated = await acronymRepository.findOne({
+        where: {
+            acronym: ILike(acronym.trim())
+        }
+    });
+
+    if (acronymDuplicated) {
+        return res.status(403).send({error: `Acronym '${acronymDuplicated.acronym}' already exists.`} as ResponseModel);
+    }
+
     const acronymToCreate = new Acronym({
         acronym: acronym.trim(),
         definition: definition.trim(),
